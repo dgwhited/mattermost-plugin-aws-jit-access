@@ -1,0 +1,17 @@
+bin/
+dist/
+server/manifest.go
+
+# Mac
+.DS_Store
+
+# Jetbrains
+.idea/
+
+# VS Code
+.vscode
+
+# Build artifacts
+server/dist/
+build/bin/
+*.tar.gz

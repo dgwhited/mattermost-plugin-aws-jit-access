@@ -1,0 +1,55 @@
+{
+    "id": "com.dgwhited.jit-access",
+    "name": "JIT Access",
+    "description": "Just-In-Time AWS access management via Mattermost",
+    "homepage_url": "https://github.com/dgwhited/mattermost-plugin-aws-jit-access",
+    "support_url": "https://github.com/dgwhited/mattermost-plugin-aws-jit-access/issues",
+    "icon_path": "assets/icon.svg",
+    "version": "0.1.0",
+    "min_server_version": "9.0.0",
+    "server": {
+        "executables": {
+            "linux-amd64": "server/dist/plugin-linux-amd64",
+            "linux-arm64": "server/dist/plugin-linux-arm64",
+            "darwin-amd64": "server/dist/plugin-darwin-amd64",
+            "darwin-arm64": "server/dist/plugin-darwin-arm64",
+            "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+        }
+    },
+    "settings_schema": {
+        "header": "Configure JIT Access plugin settings.",
+        "footer": "",
+        "settings": [
+            {
+                "key": "BackendAPIURL",
+                "display_name": "Backend API URL",
+                "type": "text",
+                "help_text": "The URL of the JIT AWS Controller API Gateway endpoint.",
+                "default": ""
+            },
+            {
+                "key": "SigningKeyID",
+                "display_name": "Signing Key ID",
+                "type": "text",
+                "help_text": "Key ID for HMAC signing of outbound requests to the backend.",
+                "default": ""
+            },
+            {
+                "key": "SigningKeySecret",
+                "display_name": "Signing Key Secret",
+                "type": "text",
+                "help_text": "Secret for HMAC signing of outbound requests to the backend.",
+                "default": "",
+                "secret": true
+            },
+            {
+                "key": "CallbackSigningSecret",
+                "display_name": "Callback Signing Secret",
+                "type": "text",
+                "help_text": "Secret for validating inbound webhook callbacks from the backend.",
+                "default": "",
+                "secret": true
+            }
+        ]
+    }
+}
