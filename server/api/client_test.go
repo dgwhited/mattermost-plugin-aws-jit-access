@@ -50,7 +50,7 @@ func TestCreateRequest_Success(t *testing.T) {
 			Status:    "PENDING",
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	})
 	defer server.Close()
 
@@ -76,7 +76,7 @@ func TestCreateRequest_Success(t *testing.T) {
 func TestCreateRequest_BackendError(t *testing.T) {
 	server, client := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "missing fields"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "missing fields"})
 	})
 	defer server.Close()
 
@@ -114,7 +114,7 @@ func TestApproveRequest_Success(t *testing.T) {
 func TestApproveRequest_Error(t *testing.T) {
 	server, client := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{"message": "request not found"})
+		_ = json.NewEncoder(w).Encode(map[string]string{"message": "request not found"})
 	})
 	defer server.Close()
 
@@ -191,7 +191,7 @@ func TestListRequests_Success(t *testing.T) {
 			},
 		}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	})
 	defer server.Close()
 
@@ -211,7 +211,7 @@ func TestListRequests_NoParams(t *testing.T) {
 		}
 		resp := ReportingResponse{Items: []JitRequest{}}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(resp)
+		_ = json.NewEncoder(w).Encode(resp)
 	})
 	defer server.Close()
 
@@ -235,7 +235,7 @@ func TestBindAccount_Success(t *testing.T) {
 		}
 		body, _ := io.ReadAll(r.Body)
 		var input BindAccountInput
-		json.Unmarshal(body, &input)
+		_ = json.Unmarshal(body, &input)
 		if input.ChannelID != "ch1" || input.AccountID != "acct1" {
 			t.Errorf("unexpected input: %+v", input)
 		}
@@ -260,7 +260,7 @@ func TestSetApprovers_Success(t *testing.T) {
 		}
 		body, _ := io.ReadAll(r.Body)
 		var input SetApproversInput
-		json.Unmarshal(body, &input)
+		_ = json.Unmarshal(body, &input)
 		if len(input.ApproverIDs) != 2 {
 			t.Errorf("expected 2 approver IDs, got %d", len(input.ApproverIDs))
 		}
@@ -290,7 +290,7 @@ func TestGetBoundAccounts_Success(t *testing.T) {
 			{ChannelID: "ch1", AccountID: "acct1", MaxRequestHours: 4},
 		}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(configs)
+		_ = json.NewEncoder(w).Encode(configs)
 	})
 	defer server.Close()
 
@@ -309,7 +309,7 @@ func TestGetBoundAccounts_Success(t *testing.T) {
 func TestGetBoundAccounts_ServerError(t *testing.T) {
 	server, client := newTestServer(t, func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"message":"internal error"}`))
+		_, _ = w.Write([]byte(`{"message":"internal error"}`))
 	})
 	defer server.Close()
 
@@ -349,7 +349,7 @@ func TestReadErrorResponse_PlainText(t *testing.T) {
 	}
 }
 
-func jsonReader(t *testing.T, v interface{}) io.Reader {
+func jsonReader(t *testing.T, v any) io.Reader {
 	t.Helper()
 	b, err := json.Marshal(v)
 	if err != nil {

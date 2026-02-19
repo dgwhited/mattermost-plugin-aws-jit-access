@@ -31,7 +31,7 @@ func testSigner() *jithmac.Signer {
 }
 
 // makeSignedWebhookRequest creates a POST request with a valid HMAC signature.
-func makeSignedWebhookRequest(t *testing.T, payload interface{}) *http.Request {
+func makeSignedWebhookRequest(t *testing.T, payload any) *http.Request {
 	t.Helper()
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -49,17 +49,6 @@ func makeSignedWebhookRequest(t *testing.T, payload interface{}) *http.Request {
 		req.Header.Set(k, v)
 	}
 	return req
-}
-
-// makeWebhookRequest creates a webhook request without HMAC signing (for
-// testing scenarios where the validator is nil).
-func makeWebhookRequest(t *testing.T, method string, payload interface{}) *http.Request {
-	t.Helper()
-	body, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("marshal payload: %v", err)
-	}
-	return httptest.NewRequest(method, "/plugins/jit/webhook", bytes.NewReader(body))
 }
 
 // ---------------------------------------------------------------------------

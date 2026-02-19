@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/mattermost/mattermost/server/public/model"
@@ -63,7 +64,7 @@ func (p *Plugin) handleSubmitDialogRequest(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Failed to read body", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	var request model.SubmitDialogRequest
 	if err := json.Unmarshal(body, &request); err != nil {
@@ -105,14 +106,14 @@ func (p *Plugin) handleSubmitDialogRequest(w http.ResponseWriter, r *http.Reques
 }
 
 // contextString safely extracts a string from the PostAction context map.
-func contextString(ctx map[string]interface{}, key string) string {
+func contextString(ctx map[string]any, key string) string {
 	v, _ := ctx[key].(string)
 	return v
 }
 
 // contextInt safely extracts an int from the PostAction context map.
 // Mattermost may store numbers as float64 in JSON round-trips.
-func contextInt(ctx map[string]interface{}, key string) int {
+func contextInt(ctx map[string]any, key string) int {
 	switch v := ctx[key].(type) {
 	case float64:
 		return int(v)
@@ -120,7 +121,7 @@ func contextInt(ctx map[string]interface{}, key string) int {
 		return v
 	case string:
 		var n int
-		fmt.Sscanf(v, "%d", &n)
+		_, _ = fmt.Sscanf(v, "%d", &n)
 		return n
 	}
 	return 0
@@ -133,7 +134,7 @@ func (p *Plugin) handlePostAction(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to read body", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	var request model.PostActionIntegrationRequest
 	if err := json.Unmarshal(body, &request); err != nil {
@@ -278,7 +279,7 @@ func (p *Plugin) handleDenyButtonClick(
 
 	// Encode the request context into the dialog state so we can use it
 	// when the dialog is submitted.
-	stateMap := map[string]interface{}{
+	stateMap := map[string]any{
 		"request_id": requestID,
 		"requester":  requester,
 		"account_id": accountID,
@@ -328,7 +329,7 @@ func (p *Plugin) handleDenyDialogSubmit(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Failed to read body", http.StatusBadRequest)
 		return
 	}
-	defer r.Body.Close()
+	defer func() { _ = r.Body.Close() }()
 
 	var req model.SubmitDialogRequest
 	if err := json.Unmarshal(body, &req); err != nil {
@@ -340,7 +341,7 @@ func (p *Plugin) handleDenyDialogSubmit(w http.ResponseWriter, r *http.Request) 
 	// handleSubmitDialogRequest: deny dialog callback goes through localhost.
 
 	// Parse the state we encoded when opening the dialog.
-	var state map[string]interface{}
+	var state map[string]any
 	if err := json.Unmarshal([]byte(req.State), &state); err != nil {
 		writeDialogError(w, "Invalid dialog state.")
 		return
@@ -417,7 +418,7 @@ func (p *Plugin) handleDenyDialogSubmit(w http.ResponseWriter, r *http.Request) 
 					},
 				},
 			}
-			p.API.UpdatePost(updatedPost)
+			_, _ = p.API.UpdatePost(updatedPost)
 		}
 	}
 
@@ -445,10 +446,8 @@ func (p *Plugin) isUserApprover(userID, channelID string) (bool, error) {
 	}
 
 	for _, cfg := range configs {
-		for _, id := range cfg.ApproverMMUserIDs {
-			if id == userID {
-				return true, nil
-			}
+		if slices.Contains(cfg.ApproverMMUserIDs, userID) {
+			return true, nil
 		}
 	}
 

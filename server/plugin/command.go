@@ -10,10 +10,6 @@ import (
 	"github.com/dgwhited/mattermost-plugin-aws-jit-access/server/commands"
 )
 
-const (
-	commandTrigger = "jit"
-)
-
 // ExecuteCommand handles the /jit slash command and its subcommands.
 func (p *Plugin) ExecuteCommand(_ *mmPlugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	parts := strings.Fields(args.Command)

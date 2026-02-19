@@ -89,7 +89,7 @@ func (h *RevokeHandler) doRevoke(args *model.CommandArgs, requestID string, isAd
 		message = fmt.Sprintf(":rotating_light: Request `%s` has been **force-revoked** by an administrator.", requestID)
 	}
 
-	h.api.CreatePost(&model.Post{
+	_, _ = h.api.CreatePost(&model.Post{
 		UserId:    args.UserId,
 		ChannelId: args.ChannelId,
 		Message:   message,

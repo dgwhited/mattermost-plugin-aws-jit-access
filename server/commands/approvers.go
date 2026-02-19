@@ -71,7 +71,7 @@ func (h *ApproversHandler) HandleApprovers(args *model.CommandArgs, usernames []
 		Message: fmt.Sprintf(":white_check_mark: Approvers for this channel have been set to: %s",
 			strings.Join(resolvedNames, ", ")),
 	}
-	h.api.CreatePost(confirmPost)
+	_, _ = h.api.CreatePost(confirmPost)
 
 	return &model.CommandResponse{}, nil
 }

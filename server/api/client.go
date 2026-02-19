@@ -144,7 +144,7 @@ func (c *Client) CreateRequest(ctx context.Context, input CreateRequestInput) (*
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, readErrorResponse(resp)
@@ -169,7 +169,7 @@ func (c *Client) ApproveRequest(ctx context.Context, requestID string, input App
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return readErrorResponse(resp)
@@ -189,7 +189,7 @@ func (c *Client) DenyRequest(ctx context.Context, requestID string, input DenyRe
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return readErrorResponse(resp)
@@ -209,7 +209,7 @@ func (c *Client) RevokeRequest(ctx context.Context, requestID string, input Revo
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return readErrorResponse(resp)
@@ -225,7 +225,7 @@ func (c *Client) GetRequest(ctx context.Context, requestID string) (*JitRequest,
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return nil, fmt.Errorf("request %s not found", requestID)
@@ -256,7 +256,7 @@ func (c *Client) ListRequests(ctx context.Context, params map[string]string) (*R
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, readErrorResponse(resp)
@@ -284,7 +284,7 @@ func (c *Client) BindAccount(ctx context.Context, channelID, accountID string) e
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusNoContent {
 		return readErrorResponse(resp)
@@ -307,7 +307,7 @@ func (c *Client) SetApprovers(ctx context.Context, channelID string, approverIDs
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
 		return readErrorResponse(resp)
@@ -323,7 +323,7 @@ func (c *Client) GetBoundAccounts(ctx context.Context, channelID string) ([]JitC
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, readErrorResponse(resp)
@@ -360,11 +360,9 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body []byte
 		// Sign using only the path portion (no query string), because API Gateway V2
 		// separates path from query params and the backend's ValidateRequest receives
 		// only event.RequestContext.HTTP.Path (which never includes the query string).
-		signPath := path
-		if idx := strings.Index(path, "?"); idx != -1 {
-			signPath = path[:idx]
-		}
-		headers, err := c.Signer.SignRequest(method, signPath, body)
+		signPath, _, _ := strings.Cut(path, "?")
+		var headers map[string]string
+		headers, err = c.Signer.SignRequest(method, signPath, body)
 		if err != nil {
 			return nil, fmt.Errorf("sign request: %w", err)
 		}

@@ -14,9 +14,9 @@ const (
 	dialogCallbackURL = "/plugins/com.dgwhited.jit-access/api/v1/request-dialog"
 )
 
-// flexString extracts a string from an interface{} value. Handles both string
+// flexString extracts a string from an any value. Handles both string
 // and fmt.Stringer types. Returns "" for nil or non-string types.
-func flexString(v interface{}) string {
+func flexString(v any) string {
 	if v == nil {
 		return ""
 	}
@@ -144,7 +144,7 @@ func (h *RequestHandler) HandleRequestCommand(args *model.CommandArgs) (*model.C
 // HandleRequestSubmit processes the dialog submission and creates a JIT
 // request via the backend API. It also posts an interactive approval card
 // in the channel.
-func (h *RequestHandler) HandleRequestSubmit(submission map[string]interface{}, userID, channelID string) (*model.CommandResponse, *model.AppError) {
+func (h *RequestHandler) HandleRequestSubmit(submission map[string]any, userID, channelID string) (*model.CommandResponse, *model.AppError) {
 	// Extract fields with flexible type handling. Mattermost dialog submissions
 	// may return text/number fields as either string or float64 depending on
 	// the subtype and Mattermost version.
@@ -255,7 +255,7 @@ func (h *RequestHandler) HandleRequestSubmit(submission map[string]interface{}, 
 				Style: "good",
 				Integration: &model.PostActionIntegration{
 					URL: actionURL,
-					Context: map[string]interface{}{
+					Context: map[string]any{
 						"action":     "approve",
 						"request_id": jitReq.RequestID,
 						"requester":  user.Username,
@@ -272,7 +272,7 @@ func (h *RequestHandler) HandleRequestSubmit(submission map[string]interface{}, 
 				Style: "danger",
 				Integration: &model.PostActionIntegration{
 					URL: actionURL,
-					Context: map[string]interface{}{
+					Context: map[string]any{
 						"action":     "deny",
 						"request_id": jitReq.RequestID,
 						"requester":  user.Username,
@@ -293,7 +293,7 @@ func (h *RequestHandler) HandleRequestSubmit(submission map[string]interface{}, 
 			"attachments": []*model.SlackAttachment{attachment},
 		},
 	}
-	h.api.CreatePost(post)
+	_, _ = h.api.CreatePost(post)
 
 	return &model.CommandResponse{}, nil
 }

@@ -126,7 +126,7 @@ func TestUnknownKeyID(t *testing.T) {
 }
 
 func TestCrossCompatibility(t *testing.T) {
-	secret := "cross-compat-secret"
+	secret := "cross-compat-secret" //nolint:gosec // test data
 	keyID := "key-1"
 
 	signer := NewSigner(keyID, secret)

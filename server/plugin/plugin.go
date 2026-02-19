@@ -21,14 +21,6 @@ type configuration struct {
 	CallbackSigningSecret string `json:"CallbackSigningSecret" yaml:"CallbackSigningSecret"`
 }
 
-// isValid checks that the minimum required settings are present.
-func (c *configuration) isValid() error {
-	if c.BackendAPIURL == "" {
-		return fmt.Errorf("BackendAPIURL must be configured")
-	}
-	return nil
-}
-
 // Plugin implements the Mattermost plugin interface.
 type Plugin struct {
 	mmPlugin.MattermostPlugin
@@ -123,29 +115,16 @@ func (p *Plugin) OnConfigurationChange() error {
 	}
 
 	// Initialise the backend API client.
-	if cfg.BackendAPIURL != "" && p.signer != nil {
+	switch {
+	case cfg.BackendAPIURL != "" && p.signer != nil:
 		p.apiClient = api.NewClient(cfg.BackendAPIURL, p.signer)
-	} else if cfg.BackendAPIURL != "" {
+	case cfg.BackendAPIURL != "":
 		p.apiClient = api.NewClient(cfg.BackendAPIURL, nil)
-	} else {
+	default:
 		p.apiClient = nil
 	}
 
 	return nil
-}
-
-// getConfiguration returns the current plugin configuration.
-func (p *Plugin) getConfiguration() *configuration {
-	p.configurationLock.RLock()
-	defer p.configurationLock.RUnlock()
-
-	if p.config == nil {
-		return &configuration{}
-	}
-
-	// Return a copy to avoid races.
-	cfg := *p.config
-	return &cfg
 }
 
 // getAPIClient returns the current backend API client. It returns nil if the

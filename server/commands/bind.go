@@ -51,7 +51,7 @@ func (h *BindHandler) HandleBind(args *model.CommandArgs, accountID string) (*mo
 		ChannelId: args.ChannelId,
 		Message:   fmt.Sprintf(":white_check_mark: AWS account `%s` has been bound to this channel.", accountID),
 	}
-	h.api.CreatePost(confirmPost)
+	_, _ = h.api.CreatePost(confirmPost)
 
 	return &model.CommandResponse{}, nil
 }
