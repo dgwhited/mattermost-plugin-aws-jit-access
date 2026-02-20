@@ -4,6 +4,10 @@ Mattermost plugin for Just-In-Time AWS access management.
 
 This plugin requires [jit-aws-controller](https://github.com/dgwhited/jit-aws-controller) as its backend. Deploy the controller and configure the API Gateway endpoint as the **Backend API URL** in the plugin settings.
 
+## Demo
+
+![JIT Access Demo](demo.gif)
+
 ## Commands
 
 | Command | Description |
